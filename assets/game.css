@@ -1,0 +1,96 @@
+:root {
+    --vw: min(1vw, 0.75vh);
+}
+
+* {
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    flex-flow: column;
+    background-color: slategray;
+    text-align: center;
+}
+
+body>div {
+    margin: auto;
+    min-width: calc(98 * var(--vw));
+}
+
+body>div>div {
+    margin-top: calc(1 * var(--vw));
+    margin-bottom: calc(1 * var(--vw));
+}
+
+body>div:not(last-child) {
+    flex: 0 1 auto;
+}
+
+body>div:last-child {
+    flex: 1 1 auto;
+}
+
+#menu {
+    display: inline-block;
+    position: relative;
+    vertical-align: top;
+}
+
+#more {
+    width: calc(10 * var(--vw));
+    height: auto;
+}
+
+#options {
+    display: none;
+    position: absolute;
+    right: 0pt;
+    margin-top: calc(1 * var(--vw));
+    background-color: mintcream;
+    border: calc(0.1 * var(--vw)) solid black;
+    border-radius: calc(2 * var(--vw));
+    font-size: calc(3 * var(--vw));
+    width: calc(30 * var(--vw));
+    min-width: 3em;
+    box-shadow: 0pt 0pt calc(5 * var(--vw)) black;
+}
+
+#options>div {
+    cursor: default;
+    padding: calc(2 * var(--vw));
+}
+
+#options>div:not(:first-child) {
+    border-top: calc(0.2 * var(--vw)) solid gray;
+}
+
+#gameover {
+    border: calc(0.15 * var(--vw)) solid black;
+    border-radius: calc(1 * var(--vw));
+    color: white;
+    font-size: calc(3 * var(--vw));
+    font-weight: bold;
+    width: calc(24 * var(--vw));
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#gameover[data-show="0"] {
+    display: none;
+}
+
+#gameover[data-show="1"] {
+    background-color: green;
+}
+
+#gameover[data-show="2"] {
+    background-color: red;
+}

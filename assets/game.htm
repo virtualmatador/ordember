@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0">
+    <link rel="stylesheet" href="game.css">
+    <script src="game.js"></script>
+    <title>Ordember</title>
+</head>
+
+<body>
+    <div>
+        <div>
+            <div id="menu">
+                <img id="more" src="more.png" onclick="more()">
+                <div id="options">
+                    <div onclick="stop()">Pause</div>
+                    <div onclick="giveUp()">Give Up</div>
+                    <div onclick="newGame()">New Game</div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div id="gameover" data-show="0"></div>
+        </div>
+    </div>
+    <div id="pieces">
+    </div>
+</body>
+
+</html>
