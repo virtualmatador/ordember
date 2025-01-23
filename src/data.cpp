@@ -16,9 +16,10 @@ main::Data::~Data() {}
 void main::Data::load() {
   try {
     toolbox::Load("OPTION_SOUND", sound_, false, false);
+    toolbox::Load("GAME_STARTED", started_, false, false);
     toolbox::Load("GAME_OVER", game_over_, 0, 3);
     toolbox::Load("GAME_HEARTS", hearts_, 1, 6);
-    toolbox::Load("GAME_SCORE", score_, 0, 0);
+    toolbox::Load("GAME_SCORE", score_, 0, 1 << 30);
     toolbox::Load("GAME_LEVEL", level_, 1, 16);
     pieces_.resize(level_ + extra_pieces_);
     for (std::size_t i = 0; i < pieces_.size(); ++i) {
@@ -39,6 +40,7 @@ void main::Data::load() {
 
 void main::Data::save() const {
   toolbox::Save("OPTION_SOUND", sound_);
+  toolbox::Save("GAME_STARTED", started_);
   toolbox::Save("GAME_OVER", game_over_);
   toolbox::Save("GAME_HEARTS", hearts_);
   toolbox::Save("GAME_SCORE", score_);
@@ -63,6 +65,7 @@ void main::Data::reset_all() {
 
 void main::Data::reset_game() {
   game_over_ = 0;
+  started_ = false;
   pieces_.resize(level_ + extra_pieces_);
   std::size_t cells = (100 - piece_size_ + 1) * (100 - piece_size_ + 1);
   for (std::size_t i = 0; i < pieces_.size(); ++i) {

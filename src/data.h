@@ -12,7 +12,7 @@ class Data {
   friend class Game;
 
   inline static constexpr std::size_t extra_pieces_{2};
-  inline static constexpr std::size_t piece_size_{7};
+  inline static constexpr std::size_t piece_size_{12};
 
 public:
   Data();
@@ -24,6 +24,7 @@ public:
 
 private:
   bool sound_;
+  bool started_;
   int game_over_;
   int hearts_;
   int score_;

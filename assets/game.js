@@ -1,4 +1,5 @@
 var audios_= [];
+var countDown_ = null;
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx = new AudioContext();
 
@@ -16,7 +17,7 @@ function setup(waves)
             audioCtx.decodeAudioData(audioData, function(buffer)
             {
                 audios_[id] = buffer;
-                if (++loaded == ids.length)
+                if (++loaded == waves.length)
                 {
                     setTimeout(CallHandler, 0, 'body', 'setup', '');
                 }
@@ -24,6 +25,12 @@ function setup(waves)
         };
         request.send();
     });
+}
+
+function setPieceSize(size)
+{
+    vars = document.querySelector(":root");
+    vars.style.setProperty("--piece-size", `${size}`);
 }
 
 function playAudio(id)
@@ -39,42 +46,42 @@ function resize(size) {
         document.getElementById("pieces").children.length = size;
     } else {
         while (size > document.getElementById("pieces").children.length) {
-            let piece = document.createElement('div');
+            let piece = document.createElement('span');
             piece.innerText = document.getElementById("pieces").children.length + 1;
+            piece.onclick = CallHandler.bind(
+                null, "piece", "tap", document.getElementById("pieces").children.length);
             document.getElementById("pieces").appendChild(piece);
         }
     }
 }
 
-function tap(index)
-{
-    CallHandler("game", "step", index.toString());
-}
-
 function setPiece(index, state, x, y)
 {
-    document.getElementById("pieces").children[index].style().x = x;
-    document.getElementById("pieces").children[index].style().y = y;
+    document.getElementById("pieces").children[index].style.left = `${x}%`;
+    document.getElementById("pieces").children[index].style.top = `${y}%`;
     document.getElementById("pieces").children[index].setAttribute(
         "data-state", state);
 }
 
-function newGame()
+function countDown(duration, handler, command, info)
 {
-    more();
-    CallHandler("game", "reset", "");
+    countDown_ = setTimeout(CallHandler, duration * 1000, handler, command, info);
 }
 
 function stop()
 {
+    clearTimeout(countDown_);
+    countDown_ = null;
     more();
     CallHandler("game", "stop", "");
 }
 
-function giveUp()
+function giveUp(reset)
 {
+    clearTimeout(countDown_);
+    countDown_ = null;
     more();
-    CallHandler("game", "giveup", "");
+    CallHandler("game", "giveup", reset);
 }
 
 function gameOver(state)
