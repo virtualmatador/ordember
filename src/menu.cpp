@@ -12,11 +12,23 @@ main::Menu::Menu() {
     if (std::strlen(command) == 0)
       return;
     else if (std::strcmp(command, "ready") == 0) {
-      std::ostringstream js;
-      js.str("");
-      js.clear();
-      js << "setSound(" << (data_.sound_ ? "true" : "false") << ");";
-      bridge::CallFunction(js.str().c_str());
+      bridge::CallFunction(
+          (std::ostringstream{} << "setLives(" << data_.lives_ << ");")
+              .str()
+              .c_str());
+      bridge::CallFunction(
+          (std::ostringstream{} << "setLevel(" << data_.level_ << ");")
+              .str()
+              .c_str());
+      bridge::CallFunction(
+          (std::ostringstream{} << "setScore(" << data_.score_ << ");")
+              .str()
+              .c_str());
+      bridge::CallFunction((std::ostringstream{}
+                            << "setSound(" << (data_.sound_ ? "true" : "false")
+                            << ");")
+                               .str()
+                               .c_str());
     }
   };
   handlers_["play"] = [&](const char *command, const char *info) {

@@ -49,7 +49,7 @@ function resize(size) {
             let piece = document.createElement('span');
             piece.innerText = document.getElementById("pieces").children.length + 1;
             piece.onclick = CallHandler.bind(
-                null, "piece", "tap", document.getElementById("pieces").children.length);
+                null, "piece", "tap", `${document.getElementById("pieces").children.length}`);
             document.getElementById("pieces").appendChild(piece);
         }
     }
@@ -76,30 +76,29 @@ function stop()
     CallHandler("game", "stop", "");
 }
 
-function giveUp(reset)
+function go(hide)
+{
+    clearTimeout(countDown_);
+    countDown_ = null;
+    if (hide)
+    {
+        more();
+    }
+    CallHandler("game", "go", "");
+}
+
+function giveUp()
 {
     clearTimeout(countDown_);
     countDown_ = null;
     more();
-    CallHandler("game", "giveup", reset);
+    CallHandler("game", "giveup", "");
 }
 
-function gameOver(state)
+function banner(color, text)
 {
-    var banner = document.getElementById("gameover");
-    banner.setAttribute("data-show", state);
-    switch(state)
-    {
-        case 0:
-            banner.textContent = "";
-        break;
-        case 1:
-            banner.textContent = "You Win!";
-        break;
-        case 2:
-            banner.textContent = "Game Over!";
-        break;
-    }
+    document.getElementById("banner").style.backgroundColor = color;
+    document.getElementById("banner").innerText = text;
 }
 
 function more()

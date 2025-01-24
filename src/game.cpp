@@ -17,41 +17,30 @@ main::Game::Game() {
               .c_str());
       bridge::CallFunction("setup(['counter', 'turn', 'error', 'win']);");
     } else if (std::strcmp(command, "setup") == 0) {
-      if (strcmp(info, "y") == 0) {
-        if (!data_.started_) {
-          data_.started_ = true;
-          for (auto &piece : data_.pieces_) {
-            std::get<0>(piece) = 1;
-          }
-          bridge::CallFunction((std::ostringstream{}
-                                << "countDown(" << data_.level_ * 0.5 << ", "
-                                << "'body'" << ", " << "'count'" << ", "
-                                << "'2'" << ");")
-                                   .str()
-                                   .c_str());
+      if (data_.phase_ == Data::Phase::begin) {
+        if (*info == 'y') {
+          reveal();
+        } else {
+          bridge::CallFunction("countDown(1.0, 'body', 'setup', 'y');");
+          update_view();
         }
       } else {
-        bridge::CallFunction((std::ostringstream{}
-                              << "countDown(" << 1.0 << ", " << "'body'" << ", "
-                              << "'setup'" << ", " << "'y'" << ");")
-                                 .str()
-                                 .c_str());
+        if (data_.phase_ == Data::Phase::remember) {
+          data_.phase_ = Data::Phase::tap;
+        }
+        update_view();
       }
-      update_view();
     } else if (std::strcmp(command, "count") == 0) {
       play_audio("counter");
       auto counter = std::strtol(info, nullptr, 10);
       if (counter > 0) {
         bridge::CallFunction((std::ostringstream{}
-                              << "countDown(" << 0.75 << ", " << "'body'"
-                              << ", " << "'count'" << ", " << "'" << counter - 1
-                              << "'" << ");")
+                              << "countDown(0.75, 'body', 'count', '"
+                              << counter - 1 << "');")
                                  .str()
                                  .c_str());
       } else {
-        for (auto &piece : data_.pieces_) {
-          std::get<0>(piece) = 2;
-        }
+        data_.phase_ = Data::Phase::tap;
         update_view();
       }
     }
@@ -60,46 +49,37 @@ main::Game::Game() {
     if (std::strlen(command) == 0)
       return;
     else if (std::strcmp(command, "tap") == 0) {
-      if (data_.game_over_ == 0) {
+      if (data_.phase_ == Data::Phase::tap) {
         auto index = std::strtol(info, nullptr, 10);
-        if (std::get<0>(data_.pieces_[index]) == 2) {
+        if (std::get<0>(data_.pieces_[index])) {
           bool tapped = true;
           for (std::size_t i = 0; i < index; ++i) {
-            if (std::get<0>(data_.pieces_[i]) != 3) {
-              std::get<0>(data_.pieces_[i]) = 4;
+            if (std::get<0>(data_.pieces_[i])) {
               tapped = false;
+              break;
             }
           }
           if (tapped) {
-            ++data_.score_;
-            std::get<0>(data_.pieces_[index]) = 3;
+            if (data_.score_ < Data::max_score_ - 1) {
+              ++data_.score_;
+            }
+            std::get<0>(data_.pieces_[index]) = false;
             if (index < data_.pieces_.size() - 1) {
               play_audio("turn");
             } else {
               play_audio("win");
-              data_.game_over_ = 1;
-              game_over();
-              // TODO increase level
-              ++data_.level_;
-              // TODO increase hearts
-              bridge::CallFunction((std::ostringstream{}
-                                    << "countDown(" << 1.5 << ", " << "'game'"
-                                    << ", " << "'reset'" << ", " << "'y'"
-                                    << ");")
-                                       .str()
-                                       .c_str());
+              data_.phase_ = Data::Phase::win;
+              if (data_.level_ < data_.max_level_ - 1) {
+                ++data_.level_;
+              }
+              if (data_.lives_ < data_.max_lives_ - 1) {
+                ++data_.lives_;
+              }
             }
+            update_view();
           } else {
-            // TODO decrease hearts
-            // TODO decrease levels
-            play_audio("error");
-            data_.game_over_ = 2;
-            game_over();
-            for (std::size_t i = index; i < data_.pieces_.size(); ++i) {
-              std::get<0>(data_.pieces_[i]) = 4;
-            }
+            loose();
           }
-          update_view();
         }
       }
     }
@@ -108,43 +88,22 @@ main::Game::Game() {
     if (std::strlen(command) == 0)
       return;
     else if (std::strcmp(command, "stop") == 0) {
-      for (auto &piece : data_.pieces_) {
-        if (std::get<0>(piece) < 2) {
-          std::get<0>(piece) = 2;
-        }
-      }
       Escape();
-    } else if (std::strcmp(command, "reset") == 0) {
-      data_.reset_game();
-      update_view();
-      bridge::CallFunction((std::ostringstream{}
-                            << "countDown(" << 1.0 << ", " << "'body'" << ", "
-                            << "'setup'" << ", " << "''" << ");")
-                               .str()
-                               .c_str());
-    } else if (std::strcmp(command, "giveup") == 0) {
-      if (data_.game_over_ == 0) {
-        play_audio("error");
-        for (auto &piece : data_.pieces_) {
-          if (std::get<0>(piece) < 3) {
-            std::get<0>(piece) = 4;
-          }
-        }
+    } else if (std::strcmp(command, "go") == 0) {
+      if (data_.phase_ == Data::Phase::loose ||
+          data_.phase_ == Data::Phase::win) {
+        data_.reset_game();
         update_view();
-        if (strcmp(info, "y") == 0) {
-          bridge::CallFunction((std::ostringstream{}
-                                << "countDown(" << 1.0 << ", " << "'game'"
-                                << ", " << "'reset'" << ", " << "''" << ");")
-                                   .str()
-                                   .c_str());
-        } else {
-          data_.game_over_ = 2;
-          game_over();
-        }
-      } else {
-        if (strcmp(info, "y") == 0) {
-          handlers_["game"]("reset", "");
-        }
+        bridge::CallFunction("countDown(1.0, 'body', 'setup', '');");
+      } else if (data_.phase_ == Data::Phase::remember) {
+        data_.phase_ = Data::Phase::tap;
+        update_view();
+      } else if (data_.phase_ == Data::Phase::begin) {
+        reveal();
+      }
+    } else if (std::strcmp(command, "giveup") == 0) {
+      if (data_.phase_ < Data::Phase::loose) {
+        loose();
       }
     }
   };
@@ -174,24 +133,94 @@ void main::Game::update_view() const {
           .str()
           .c_str());
   for (std::size_t i = 0; i < data_.pieces_.size(); ++i) {
+    std::size_t state;
+    switch (data_.phase_) {
+    case Data::Phase::begin:
+      state = 0;
+      break;
+    case Data::Phase::remember:
+      state = 1;
+      break;
+    case Data::Phase::tap:
+      state = std::get<0>(data_.pieces_[i]) ? 2 : 3;
+      break;
+    case Data::Phase::loose:
+      state = std::get<0>(data_.pieces_[i]) ? 4 : 3;
+      break;
+    case Data::Phase::win:
+      state = 3;
+      break;
+    case Data::Phase::over:
+      state = std::get<0>(data_.pieces_[i]) ? 4 : 3;
+      break;
+    case Data::Phase::end:
+      state = 2;
+      break;
+    }
     bridge::CallFunction((std::ostringstream{}
-                          << "setPiece(" << i << ", "
-                          << std::get<0>(data_.pieces_[i]) << ", "
+                          << "setPiece(" << i << ", " << state << ", "
                           << std::get<1>(data_.pieces_[i]) << ", "
                           << std::get<2>(data_.pieces_[i]) << ");")
                              .str()
                              .c_str());
   }
-  game_over();
-}
-
-void main::Game::give_up() {}
-
-void main::Game::game_over() const {
+  const char *color;
+  const char *text;
+  switch (data_.phase_) {
+  case Data::Phase::begin:
+    color = "navy";
+    text = "Ready";
+    break;
+  case Data::Phase::remember:
+    color = "blue";
+    text = "Go";
+    break;
+  case Data::Phase::tap:
+    color = "aqua";
+    text = "?";
+    break;
+  case Data::Phase::loose:
+    color = "magenta";
+    text = "Wrong!";
+    break;
+  case Data::Phase::win:
+    color = "green";
+    text = "Win!";
+    break;
+  case Data::Phase::over:
+    color = "red";
+    text = "Game Over!";
+    break;
+  case Data::Phase::end:
+    color = "black";
+    text = "";
+    break;
+  }
   bridge::CallFunction(
-      (std::ostringstream{} << "gameOver(" << data_.game_over_ << ");")
+      (std::ostringstream{} << "banner('" << color << "', '" << text << "');")
           .str()
           .c_str());
+}
+
+void main::Game::loose() {
+  play_audio("error");
+  if (--data_.lives_ > 0) {
+    data_.phase_ = Data::Phase::loose;
+  } else {
+    data_.phase_ = Data::Phase::over;
+  }
+  update_view();
+}
+
+void main::Game::reveal() {
+  data_.phase_ = Data::Phase::remember;
+  update_view();
+  bridge::CallFunction((std::ostringstream{}
+                        << "countDown(" << data_.level_ * 0.5 << ", "
+                        << "'body'" << ", " << "'count'" << ", " << "'2'"
+                        << ");")
+                           .str()
+                           .c_str());
 }
 
 void main::Game::FeedUri(

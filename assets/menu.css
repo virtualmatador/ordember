@@ -1,42 +1,49 @@
-*
-{
+* {
     user-select: none;
     -webkit-user-select: none;
 }
 
-body > div
-{
+body>div {
     text-align: center;
 }
 
-body > div > div
-{
+body>div>div {
     display: inline-block;
 }
 
-h4
-{
+h4 {
     text-align: left;
 }
 
-p
-{
+p {
     text-align: left;
 }
 
-.controls
-{
+.controls {
     text-align: left;
 }
 
-.controls > *
-{
+.controls>* {
     font-size: 1em;
     margin-top: 6pt;
     margin-bottom: 6pt;
 }
 
-.controls > button
-{
+.controls>button {
     width: 6em;
+}
+
+#lives>* {
+    margin-left: 2pt;
+    margin-right: 2pt;
+    width: 1em;
+    height: 1em;
+    background-image: url("heart.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+    display: inline-block;
+}
+
+#lives {
+    min-width: 6em;
 }

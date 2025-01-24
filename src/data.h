@@ -8,11 +8,26 @@
 
 namespace main {
 class Data {
+private:
   friend class Menu;
   friend class Game;
 
-  inline static constexpr std::size_t extra_pieces_{2};
-  inline static constexpr std::size_t piece_size_{12};
+  enum class Phase {
+    begin,
+    remember,
+    tap,
+    loose,
+    win,
+    over,
+    end,
+  };
+
+  inline static constexpr int extra_pieces_{2};
+  inline static constexpr int piece_size_{12};
+  inline static constexpr int max_level_{16};
+  inline static constexpr int max_lives_{6};
+  inline static constexpr int max_score_{1 << 30};
+  inline static constexpr int max_state_{1 << 10};
 
 public:
   Data();
@@ -24,12 +39,11 @@ public:
 
 private:
   bool sound_;
-  bool started_;
-  int game_over_;
-  int hearts_;
+  Phase phase_;
+  int lives_;
   int score_;
   int level_;
-  std::vector<std::tuple<int, int, int>> pieces_;
+  std::vector<std::tuple<bool, int, int>> pieces_;
   std::random_device seeder_;
   std::default_random_engine random_;
 };

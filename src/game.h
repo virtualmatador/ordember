@@ -18,8 +18,8 @@ public:
 private:
   void play_audio(const char *name) const;
   void update_view() const;
-  void give_up();
-  void game_over() const;
+  void loose();
+  void reveal();
 };
 } // namespace main
 

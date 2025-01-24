@@ -1,4 +1,5 @@
 #include <iostream>
+#include <set>
 #include <sstream>
 
 #include "bridge.h"
@@ -16,16 +17,19 @@ main::Data::~Data() {}
 void main::Data::load() {
   try {
     toolbox::Load("OPTION_SOUND", sound_, false, false);
-    toolbox::Load("GAME_STARTED", started_, false, false);
-    toolbox::Load("GAME_OVER", game_over_, 0, 3);
-    toolbox::Load("GAME_HEARTS", hearts_, 1, 6);
-    toolbox::Load("GAME_SCORE", score_, 0, 1 << 30);
-    toolbox::Load("GAME_LEVEL", level_, 1, 16);
+    toolbox::Load(
+        "GAME_OVER",
+        *reinterpret_cast<std::underlying_type<Phase>::type *>(&phase_),
+        static_cast<std::underlying_type<Phase>::type>(Phase::begin),
+        static_cast<std::underlying_type<Phase>::type>(Phase::end));
+    toolbox::Load("GAME_LIVES", lives_, 0, max_lives_);
+    toolbox::Load("GAME_SCORE", score_, 0, max_score_);
+    toolbox::Load("GAME_LEVEL", level_, 1, max_level_);
     pieces_.resize(level_ + extra_pieces_);
     for (std::size_t i = 0; i < pieces_.size(); ++i) {
       toolbox::Load(
           (std::ostringstream{} << "GAME_PIECE_S_" << i).str().c_str(),
-          std::get<0>(pieces_[i]), 0, 4);
+          std::get<0>(pieces_[i]), false, false);
       toolbox::Load(
           (std::ostringstream{} << "GAME_PIECE_X_" << i).str().c_str(),
           std::get<1>(pieces_[i]), 0, 100);
@@ -40,9 +44,8 @@ void main::Data::load() {
 
 void main::Data::save() const {
   toolbox::Save("OPTION_SOUND", sound_);
-  toolbox::Save("GAME_STARTED", started_);
-  toolbox::Save("GAME_OVER", game_over_);
-  toolbox::Save("GAME_HEARTS", hearts_);
+  toolbox::Save("GAME_OVER", static_cast<std::size_t>(phase_));
+  toolbox::Save("GAME_LIVES", lives_);
   toolbox::Save("GAME_SCORE", score_);
   toolbox::Save("GAME_LEVEL", level_);
   for (std::size_t i = 0; i < pieces_.size(); ++i) {
@@ -56,43 +59,55 @@ void main::Data::save() const {
 }
 
 void main::Data::reset_all() {
-  sound_ = false;
-  hearts_ = 5;
+  sound_ = true;
+  lives_ = max_lives_ - 1;
   score_ = 0;
   level_ = 1;
   reset_game();
 }
 
 void main::Data::reset_game() {
-  game_over_ = 0;
-  started_ = false;
+  phase_ = Phase::begin;
   pieces_.resize(level_ + extra_pieces_);
-  std::size_t cells = (100 - piece_size_ + 1) * (100 - piece_size_ + 1);
+  std::set<std::tuple<std::size_t, std::size_t>> fulls;
+  for (std::size_t x = 100 - Data::piece_size_ + 1; x < 100; ++x) {
+    for (std::size_t y = 0; y < 100 - Data::piece_size_ + 1; y++) {
+      fulls.insert({x, y});
+    }
+  }
+  for (std::size_t x = 100 - Data::piece_size_ + 1; x < 100; ++x) {
+    for (std::size_t y = 100 - Data::piece_size_ + 1; y < 100; y++) {
+      fulls.insert({x, y});
+    }
+  }
+  for (std::size_t x = 0; x < 100 - Data::piece_size_ + 1; ++x) {
+    for (std::size_t y = 100 - Data::piece_size_ + 1; y < 100; y++) {
+      fulls.insert({x, y});
+    }
+  }
   for (std::size_t i = 0; i < pieces_.size(); ++i) {
-    auto index = std::uniform_int_distribution<int>(0, cells)(random_);
-    for (std::size_t x = 0; x < 100 - piece_size_ + 1; ++x) {
-      for (std::size_t y = 0; y < 100 - piece_size_ + 1; ++y) {
-        bool free = true;
-        for (std::size_t p = 0; p < i; ++p) {
-          if (x >= std::get<1>(pieces_[p]) &&
-              x < std::get<1>(pieces_[p]) + piece_size_ &&
-              y >= std::get<2>(pieces_[p]) &&
-              y < std::get<2>(pieces_[p]) + piece_size_) {
-            free = false;
-            break;
-          }
-        }
-        if (free) {
+    auto index = std::uniform_int_distribution<int>(
+        0, 100 * 100 - fulls.size())(random_);
+    for (std::size_t x = 0; x < 100; ++x) {
+      for (std::size_t y = 0; y < 100; ++y) {
+        if (fulls.find({x, y}) == fulls.end()) {
           if (index == 0) {
-            pieces_[i] = {0, x, y};
-            cells -= std::min(piece_size_, 100 - piece_size_ + 1 - x) *
-                     std::min(piece_size_, 100 - piece_size_ + 1 - y);
-            x = 100 - piece_size_ + 1;
-            y = 100 - piece_size_ + 1;
+            pieces_[i] = {true, x, y};
+            x = 100;
+            y = 100;
           } else {
             --index;
           }
         }
+      }
+    }
+    for (std::size_t x = std::max(piece_size_ - 1, std::get<1>(pieces_[i])) -
+                         (piece_size_ - 1);
+         x < std::get<1>(pieces_[i]) + piece_size_; ++x) {
+      for (std::size_t y = std::max(piece_size_ - 1, std::get<2>(pieces_[i])) -
+                           (piece_size_ - 1);
+           y < std::get<2>(pieces_[i]) + piece_size_; ++y) {
+        fulls.insert({x, y});
       }
     }
   }

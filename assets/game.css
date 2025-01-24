@@ -74,7 +74,7 @@ body>div:last-child {
     border-top: calc(0.2 * var(--vw)) solid gray;
 }
 
-#gameover {
+#banner {
     border: calc(0.15 * var(--vw)) solid black;
     border-radius: calc(1 * var(--vw));
     color: white;
@@ -83,18 +83,8 @@ body>div:last-child {
     width: calc(24 * var(--vw));
     margin-left: auto;
     margin-right: auto;
-}
-
-#gameover[data-show="0"] {
-    display: none;
-}
-
-#gameover[data-show="1"] {
-    background-color: green;
-}
-
-#gameover[data-show="2"] {
-    background-color: red;
+    text-decoration: none;
+    cursor: default;
 }
 
 #pieces {
@@ -107,11 +97,11 @@ body>div:last-child {
     width: calc(var(--piece-size) * var(--vw));
     height: calc(var(--piece-size) * var(--vw));
     line-height: calc(var(--piece-size) * var(--vw));
-    font-size: calc(var(--piece-size) * var(--vw) * 0.75);
+    font-size: calc(var(--piece-size) * var(--vw) * 0.7);
     border-radius: calc(var(--piece-size) * var(--vw) / 2);
     text-decoration: none;
     cursor: default;
-    background-color: blue;
+    background-color: ivory
 }
 
 #pieces>span[data-state="0"] {
