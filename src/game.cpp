@@ -21,8 +21,8 @@ main::Game::Game() {
         if (*info == 'y') {
           reveal();
         } else {
-          bridge::CallFunction("countDown(1.0, 'body', 'setup', 'y');");
           update_view();
+          bridge::CallFunction("countDown(1.0, 'body', 'setup', 'y');");
         }
       } else {
         if (data_.phase_ == Data::Phase::remember) {
@@ -69,9 +69,6 @@ main::Game::Game() {
             } else {
               play_audio("win");
               data_.phase_ = Data::Phase::win;
-              if (data_.level_ < data_.max_level_ - 1) {
-                ++data_.level_;
-              }
               if (data_.lives_ < data_.max_lives_ - 1) {
                 ++data_.lives_;
               }
@@ -90,16 +87,32 @@ main::Game::Game() {
     else if (std::strcmp(command, "stop") == 0) {
       Escape();
     } else if (std::strcmp(command, "go") == 0) {
-      if (data_.phase_ == Data::Phase::loose ||
-          data_.phase_ == Data::Phase::win) {
+      switch (data_.phase_) {
+      case Data::Phase::begin:
+        reveal();
+        break;
+      case Data::Phase::remember:
+        data_.phase_ = Data::Phase::tap;
+        update_view();
+        break;
+      case Data::Phase::tap:
+        break;
+      case Data::Phase::loose:
         data_.reset_game();
         update_view();
         bridge::CallFunction("countDown(1.0, 'body', 'setup', '');");
-      } else if (data_.phase_ == Data::Phase::remember) {
-        data_.phase_ = Data::Phase::tap;
+        break;
+      case Data::Phase::win:
+        if (data_.level_ < data_.max_level_ - 1) {
+          ++data_.level_;
+        }
+        data_.reset_game();
         update_view();
-      } else if (data_.phase_ == Data::Phase::begin) {
-        reveal();
+        bridge::CallFunction("countDown(1.0, 'body', 'setup', '');");
+        break;
+      case Data::Phase::over:
+        Escape();
+        break;
       }
     } else if (std::strcmp(command, "giveup") == 0) {
       if (data_.phase_ < Data::Phase::loose) {

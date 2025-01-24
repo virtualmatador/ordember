@@ -1,6 +1,5 @@
 :root {
     --piece-size: 1;
-    --vw: min(1vw, 0.75vh);
 }
 
 * {
@@ -15,28 +14,41 @@ body {
 }
 
 body {
-    display: flex;
-    flex-flow: column;
     background-color: slategray;
     text-align: center;
 }
 
-body>div {
-    margin: auto;
-    min-width: calc(98 * var(--vw));
-}
-
 body>div>div {
-    margin-top: calc(1 * var(--vw));
-    margin-bottom: calc(1 * var(--vw));
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1vmin;
+    margin-bottom: 1vmin;
 }
 
-body>div:not(last-child) {
-    flex: 0 1 auto;
+#header {
+    margin: auto;
+    width: 80%;
+    height: 10%;
 }
 
-body>div:last-child {
-    flex: 1 1 auto;
+#pieces {
+    margin: auto;
+    width: 80%;
+    height: 80%;
+}
+
+#banner {
+    display: inline-block;
+    border: 0.15vmin solid black;
+    border-radius: 1vmin;
+    color: white;
+    font-size: 3vmin;
+    font-weight: bold;
+    width: 24vmin;
+    margin-left: auto;
+    margin-right: auto;
+    text-decoration: none;
+    cursor: default;
 }
 
 #menu {
@@ -46,7 +58,7 @@ body>div:last-child {
 }
 
 #more {
-    width: calc(10 * var(--vw));
+    width: 5vmin;
     height: auto;
 }
 
@@ -54,37 +66,24 @@ body>div:last-child {
     display: none;
     position: absolute;
     right: 0pt;
-    margin-top: calc(1 * var(--vw));
+    margin-top: 1vmin;
     background-color: mintcream;
-    border: calc(0.1 * var(--vw)) solid black;
-    border-radius: calc(2 * var(--vw));
-    font-size: calc(3 * var(--vw));
-    width: calc(30 * var(--vw));
+    border: 0.1vmin solid black;
+    border-radius: 2vmin;
+    font-size: 3vmin;
+    width: 30vmin;
     min-width: 3em;
-    box-shadow: 0pt 0pt calc(5 * var(--vw)) black;
+    box-shadow: 0pt 0pt 5vmin black;
     z-index: 1000;
 }
 
 #options>div {
     cursor: default;
-    padding: calc(2 * var(--vw));
+    padding: 2vmin;
 }
 
 #options>div:not(:first-child) {
-    border-top: calc(0.2 * var(--vw)) solid gray;
-}
-
-#banner {
-    border: calc(0.15 * var(--vw)) solid black;
-    border-radius: calc(1 * var(--vw));
-    color: white;
-    font-size: calc(3 * var(--vw));
-    font-weight: bold;
-    width: calc(24 * var(--vw));
-    margin-left: auto;
-    margin-right: auto;
-    text-decoration: none;
-    cursor: default;
+    border-top: 0.2vmin solid gray;
 }
 
 #pieces {
@@ -94,11 +93,11 @@ body>div:last-child {
 #pieces>span {
     position: absolute;
     z-index: 99;
-    width: calc(var(--piece-size) * var(--vw));
-    height: calc(var(--piece-size) * var(--vw));
-    line-height: calc(var(--piece-size) * var(--vw));
-    font-size: calc(var(--piece-size) * var(--vw) * 0.7);
-    border-radius: calc(var(--piece-size) * var(--vw) / 2);
+    width: calc(var(--piece-size) * 0.8vmin);
+    height: calc(var(--piece-size) * 0.8vmin);
+    line-height: calc(var(--piece-size) * 0.8vmin);
+    font-size: calc(var(--piece-size) * 0.5vmin);
+    border-radius: calc(var(--piece-size) * 0.4vmin);
     text-decoration: none;
     cursor: default;
     background-color: ivory

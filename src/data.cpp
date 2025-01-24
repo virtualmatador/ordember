@@ -87,7 +87,7 @@ void main::Data::reset_game() {
   }
   for (std::size_t i = 0; i < pieces_.size(); ++i) {
     auto index = std::uniform_int_distribution<int>(
-        0, 100 * 100 - fulls.size())(random_);
+        0, 100 * 100 - fulls.size() - 1)(random_);
     for (std::size_t x = 0; x < 100; ++x) {
       for (std::size_t y = 0; y < 100; ++y) {
         if (fulls.find({x, y}) == fulls.end()) {
