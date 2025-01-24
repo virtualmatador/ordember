@@ -17,7 +17,8 @@ main::Menu::Menu() {
               .str()
               .c_str());
       bridge::CallFunction(
-          (std::ostringstream{} << "setLevel(" << data_.level_ << ");")
+          (std::ostringstream{}
+           << "setLevel(" << data_.pieces_.size() - Data::extra_pieces_ << ");")
               .str()
               .c_str());
       bridge::CallFunction(

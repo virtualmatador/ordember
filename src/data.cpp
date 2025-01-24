@@ -16,6 +16,7 @@ main::Data::~Data() {}
 
 void main::Data::load() {
   try {
+    int count;
     toolbox::Load("OPTION_SOUND", sound_, false, false);
     toolbox::Load(
         "GAME_OVER",
@@ -24,8 +25,8 @@ void main::Data::load() {
         static_cast<std::underlying_type<Phase>::type>(Phase::end));
     toolbox::Load("GAME_LIVES", lives_, 0, max_lives_);
     toolbox::Load("GAME_SCORE", score_, 0, max_score_);
-    toolbox::Load("GAME_LEVEL", level_, 1, max_level_);
-    pieces_.resize(level_ + extra_pieces_);
+    toolbox::Load("GAME_COUNT", count, 1, max_level_ + extra_pieces_);
+    pieces_.resize(count);
     for (std::size_t i = 0; i < pieces_.size(); ++i) {
       toolbox::Load(
           (std::ostringstream{} << "GAME_PIECE_S_" << i).str().c_str(),
@@ -47,7 +48,7 @@ void main::Data::save() const {
   toolbox::Save("GAME_OVER", static_cast<std::size_t>(phase_));
   toolbox::Save("GAME_LIVES", lives_);
   toolbox::Save("GAME_SCORE", score_);
-  toolbox::Save("GAME_LEVEL", level_);
+  toolbox::Save("GAME_COUNT", pieces_.size());
   for (std::size_t i = 0; i < pieces_.size(); ++i) {
     toolbox::Save((std::ostringstream{} << "GAME_PIECE_S_" << i).str().c_str(),
                   std::get<0>(pieces_[i]));
@@ -62,13 +63,12 @@ void main::Data::reset_all() {
   sound_ = true;
   lives_ = max_lives_ - 1;
   score_ = 0;
-  level_ = 1;
+  pieces_.resize(extra_pieces_ + 1);
   reset_game();
 }
 
 void main::Data::reset_game() {
   phase_ = Phase::begin;
-  pieces_.resize(level_ + extra_pieces_);
   std::set<std::tuple<std::size_t, std::size_t>> fulls;
   for (std::size_t x = 100 - Data::piece_size_ + 1; x < 100; ++x) {
     for (std::size_t y = 0; y < 100 - Data::piece_size_ + 1; y++) {

@@ -23,7 +23,7 @@ private:
   };
 
   inline static constexpr int extra_pieces_{2};
-  inline static constexpr int piece_size_{12};
+  inline static constexpr int piece_size_{15};
   inline static constexpr int max_level_{16};
   inline static constexpr int max_lives_{6};
   inline static constexpr int max_score_{1 << 30};
@@ -42,7 +42,6 @@ private:
   Phase phase_;
   int lives_;
   int score_;
-  int level_;
   std::vector<std::tuple<bool, int, int>> pieces_;
   std::random_device seeder_;
   std::default_random_engine random_;

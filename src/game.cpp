@@ -103,8 +103,8 @@ main::Game::Game() {
         bridge::CallFunction("countDown(1.0, 'body', 'setup', '');");
         break;
       case Data::Phase::win:
-        if (data_.level_ < data_.max_level_ - 1) {
-          ++data_.level_;
+        if (data_.pieces_.size() < data_.max_level_ + Data::extra_pieces_ - 1) {
+          data_.pieces_.emplace_back(true, 0, 0);
         }
         data_.reset_game();
         update_view();
@@ -228,12 +228,12 @@ void main::Game::loose() {
 void main::Game::reveal() {
   data_.phase_ = Data::Phase::remember;
   update_view();
-  bridge::CallFunction((std::ostringstream{}
-                        << "countDown(" << data_.level_ * 0.5 << ", "
-                        << "'body'" << ", " << "'count'" << ", " << "'2'"
-                        << ");")
-                           .str()
-                           .c_str());
+  bridge::CallFunction(
+      (std::ostringstream{}
+       << "countDown(" << (data_.pieces_.size() - Data::extra_pieces_ - 1) * 0.5
+       << ", " << "'body'" << ", " << "'count'" << ", " << "'2'" << ");")
+          .str()
+          .c_str());
 }
 
 void main::Game::FeedUri(
