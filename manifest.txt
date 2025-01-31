@@ -1,5 +1,5 @@
 target=Ordember
 identifier=com.shaidin.ordember
-version=1.2.2
+version=1.3.3
 internet=false
 guid=232844E6-A8B0-4282-9EAF-70F728813DEB
