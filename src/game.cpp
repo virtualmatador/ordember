@@ -60,8 +60,8 @@ main::Game::Game() {
             }
           }
           if (tapped) {
-            if (data_.score_ < Data::max_score_ - 1) {
-              ++data_.score_;
+            if (data_.score_ + index + 1 < Data::max_score_) {
+              data_.score_ += index + 1;
             }
             std::get<0>(data_.pieces_[index]) = false;
             if (index < data_.pieces_.size() - 1) {
@@ -186,11 +186,11 @@ void main::Game::update_view() const {
     break;
   case Data::Phase::remember:
     color = "blue";
-    text = "Go";
+    text = "Watch";
     break;
   case Data::Phase::tap:
-    color = "aqua";
-    text = "?";
+    color = "gray";
+    text = "Go";
     break;
   case Data::Phase::loose:
     color = "magenta";
