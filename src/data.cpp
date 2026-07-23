@@ -1,5 +1,6 @@
+#include <array>
+#include <cmath>
 #include <iostream>
-#include <set>
 #include <sstream>
 
 #include "bridge.h"
@@ -25,7 +26,7 @@ void main::Data::load() {
         static_cast<std::underlying_type<Phase>::type>(Phase::end));
     toolbox::Load("GAME_LIVES", lives_, 0, max_lives_);
     toolbox::Load("GAME_SCORE", score_, 0, max_score_);
-    toolbox::Load("GAME_COUNT", count, 1, max_level_ + extra_pieces_);
+    toolbox::Load("GAME_COUNT", count, 1, max_pieces_);
     pieces_.resize(count);
     for (std::size_t i = 0; i < pieces_.size(); ++i) {
       toolbox::Load(
@@ -67,47 +68,62 @@ void main::Data::reset_all() {
   reset_game();
 }
 
+float main::Data::level_piece_size() const {
+  return piece_size_ - static_cast<float>(pieces_.size()) / 2;
+}
+
 void main::Data::reset_game() {
+  constexpr std::size_t board_size = 100;
   phase_ = Phase::begin;
-  std::set<std::tuple<std::size_t, std::size_t>> fulls;
-  for (std::size_t x = 100 - Data::piece_size_ + 1; x < 100; ++x) {
-    for (std::size_t y = 0; y < 100 - Data::piece_size_ + 1; y++) {
-      fulls.insert({x, y});
+  const auto current_piece_size = level_piece_size();
+  const auto placement_radius = static_cast<int>(std::ceil(current_piece_size));
+  std::array<bool, board_size * board_size> fulls{};
+  std::size_t full_count = 0;
+  const auto fill = [&](std::size_t x, std::size_t y) {
+    auto &full = fulls[x * board_size + y];
+    if (!full) {
+      full = true;
+      ++full_count;
     }
-  }
-  for (std::size_t x = 100 - Data::piece_size_ + 1; x < 100; ++x) {
-    for (std::size_t y = 100 - Data::piece_size_ + 1; y < 100; y++) {
-      fulls.insert({x, y});
-    }
-  }
-  for (std::size_t x = 0; x < 100 - Data::piece_size_ + 1; ++x) {
-    for (std::size_t y = 100 - Data::piece_size_ + 1; y < 100; y++) {
-      fulls.insert({x, y});
+  };
+  for (std::size_t x = 0; x < board_size; ++x) {
+    for (std::size_t y = 0; y < board_size; ++y) {
+      if (x == 0 || y == 0 || x >= board_size - placement_radius ||
+          y >= board_size - placement_radius) {
+        fill(x, y);
+      }
     }
   }
   for (std::size_t i = 0; i < pieces_.size(); ++i) {
     auto index = std::uniform_int_distribution<int>(
-        0, 100 * 100 - fulls.size() - 1)(random_);
-    for (std::size_t x = 0; x < 100; ++x) {
-      for (std::size_t y = 0; y < 100; ++y) {
-        if (fulls.find({x, y}) == fulls.end()) {
+        0, board_size * board_size - full_count - 1)(random_);
+    for (std::size_t x = 0; x < board_size; ++x) {
+      for (std::size_t y = 0; y < board_size; ++y) {
+        if (!fulls[x * board_size + y]) {
           if (index == 0) {
             pieces_[i] = {true, x, y};
-            x = 100;
-            y = 100;
+            x = board_size;
+            y = board_size;
           } else {
             --index;
           }
         }
       }
     }
-    for (std::size_t x = std::max(piece_size_ - 1, std::get<1>(pieces_[i])) -
-                         (piece_size_ - 1);
-         x < std::get<1>(pieces_[i]) + piece_size_; ++x) {
-      for (std::size_t y = std::max(piece_size_ - 1, std::get<2>(pieces_[i])) -
-                           (piece_size_ - 1);
-           y < std::get<2>(pieces_[i]) + piece_size_; ++y) {
-        fulls.insert({x, y});
+    for (std::size_t x =
+             std::max(placement_radius - 1, std::get<1>(pieces_[i])) -
+             (placement_radius - 1);
+         x < std::get<1>(pieces_[i]) + placement_radius; ++x) {
+      for (std::size_t y =
+               std::max(placement_radius - 1, std::get<2>(pieces_[i])) -
+               (placement_radius - 1);
+           y < std::get<2>(pieces_[i]) + placement_radius; ++y) {
+        const auto delta_x = static_cast<int>(x) - std::get<1>(pieces_[i]);
+        const auto delta_y = static_cast<int>(y) - std::get<2>(pieces_[i]);
+        if (delta_x * delta_x + delta_y * delta_y <
+            current_piece_size * current_piece_size) {
+          fill(x, y);
+        }
       }
     }
   }

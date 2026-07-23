@@ -11,10 +11,6 @@ main::Game::Game() {
     if (std::strlen(command) == 0)
       return;
     else if (std::strcmp(command, "ready") == 0) {
-      bridge::CallFunction(
-          (std::ostringstream{} << "setPieceSize(" << data_.piece_size_ << ");")
-              .str()
-              .c_str());
       bridge::CallFunction("setup(['counter', 'turn', 'error', 'win']);");
     } else if (std::strcmp(command, "setup") == 0) {
       if (data_.phase_ == Data::Phase::begin) {
@@ -60,8 +56,9 @@ main::Game::Game() {
             }
           }
           if (tapped) {
-            if (data_.score_ + index + 1 < Data::max_score_) {
-              data_.score_ += index + 1;
+            data_.score_ += index + data_.pieces_.size();
+            if (data_.score_ >= Data::max_score_) {
+              data_.score_ = Data::max_score_ - 1;
             }
             std::get<0>(data_.pieces_[index]) = false;
             if (index < data_.pieces_.size() - 1) {
@@ -103,7 +100,7 @@ main::Game::Game() {
         bridge::CallFunction("countDown(1.0, 'body', 'setup', '');");
         break;
       case Data::Phase::win:
-        if (data_.pieces_.size() < data_.max_level_ + Data::extra_pieces_ - 1) {
+        if (data_.pieces_.size() < data_.max_pieces_) {
           data_.pieces_.emplace_back(true, 0, 0);
         }
         data_.reset_game();
@@ -141,6 +138,17 @@ void main::Game::play_audio(const char *name) const {
 }
 
 void main::Game::update_view() const {
+  bridge::CallFunction(
+      (std::ostringstream{}
+       << "setPieceSize(" << data_.level_piece_size() << ");")
+          .str()
+          .c_str());
+  bridge::CallFunction((std::ostringstream{}
+                        << "setProgress("
+                        << data_.pieces_.size() - Data::extra_pieces_ << ", "
+                        << data_.score_ << ", " << data_.lives_ << ");")
+                           .str()
+                           .c_str());
   bridge::CallFunction(
       (std::ostringstream{} << "resize(" << data_.pieces_.size() << ");")
           .str()

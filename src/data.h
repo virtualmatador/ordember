@@ -23,8 +23,8 @@ private:
   };
 
   inline static constexpr int extra_pieces_{2};
-  inline static constexpr int piece_size_{15};
-  inline static constexpr int max_level_{16};
+  inline static constexpr float piece_size_{22.0F};
+  inline static constexpr int max_pieces_{18};
   inline static constexpr int max_lives_{6};
   inline static constexpr int max_score_{1 << 30};
   inline static constexpr int max_state_{1 << 10};
@@ -38,6 +38,8 @@ public:
   void reset_game();
 
 private:
+  float level_piece_size() const;
+
   bool sound_;
   Phase phase_;
   int lives_;
